@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizador Completo</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #333;
+            color: white;
+        }
+        #login-container {
+            background: #444;
+            width: 320px;
+            margin: 100px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        #app-container {
+            display: none;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #444;
+            border-radius: 10px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #555;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 {
+            margin: 0;
+        }
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .form-group {
+            position: relative;
+        }
+        input {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background-color: #333;
+            color: white;
+            box-sizing: border-box;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            user-select: none;
+            font-size: 18px;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+        .toggle-password:hover {
+            opacity: 1;
+        }
+        button {
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #666;
+        }
+        .btn-danger {
+            background-color: #ff4444;
+        }
+        .btn-danger:hover {
+            background-color: #ff5555;
+        }
+        .btn-success {
+            background-color: #44aa44;
+        }
+        .btn-success:hover {
+            background-color: #55bb55;
+        }
+        #audio-player {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background-color: #444;
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .error-message {
+            background-color: #ff4444;
+            color: white;
+        }
+        .success-message {
+            background-color: #44aa44;
+            color: white;
+        }
+        .admin-only {
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #666;
+        }
+        .action-btn {
+            padding: 5px 10px;
+            margin-left: 5px;
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Player de Rádio -->
+    <audio id="audio-player" controls autoplay loop style="display:none;">
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+        Seu navegador não suporta o elemento de áudio.
+    </audio>
+
+    <!-- Container de Login -->
+    <div id="login-container">
+        <h2>Login</h2>
+        <div class="form-group">
+            <input type="text" id="username" placeholder="Usuário">
+        </div>
+        <div class="form-group">
+            <input type="password" id="password" placeholder="Senha">
+            <span class="toggle-password" data-target="password">👁️</span>
+        </div>
+        <button id="loginBtn">Entrar</button>
+        <button id="registerBtn" style="margin-top: 10px;">Cadastrar Novo Usuário</button>
+        <div id="errorMessage" class="message error-message" style="display:none;"></div>
+    </div>
+
+    <!-- Container Principal do App -->
+    <div id="app-container">
+        <header>
+            <h1>Bloco de Notas</h1>
+            <div>
+                <button id="logoutBtn">Sair</button>
+                <button id="downloadHistoryBtn" class="admin-only">Baixar Histórico</button>
+                <button id="manageUsersBtn" class="admin-only">Gerenciar Usuários</button>
+            </div>
+        </header>
+
+        <div style="margin-top:30px;background:#555;padding:20px;border-radius:10px;">
+            <h2>Notas do Usuário</h2>
+            <p id="loggedUser"></p>
+            <textarea id="user-notes" style="width:100%;height:200px;background-color:#444;color:white;"></textarea>
+            <button id="saveUserNotesBtn" class="btn-success">Salvar Notas</button>
+            <button id="clearUserNotesBtn" class="btn-danger">Limpar Notas</button>
+        </div>
+
+        <div id="adminHistory" style="margin-top:30px;background:#555;padding:20px;border-radius:10px;display:none;">
+            <h2>Histórico de Notas</h2>
+            <div id="noteHistory" style="white-space:pre-wrap;"></div>
+        </div>
+    </div>
+
+    <!-- Modal de Cadastro de Novo Usuário -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Cadastrar Novo Usuário</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="form-group">
+                <input type="text" id="newUsername" placeholder="Novo Usuário">
+            </div>
+            <div class="form-group">
+                <input type="password" id="newPassword" placeholder="Nova Senha">
+                <span class="toggle-password" data-target="newPassword">👁️</span>
+            </div>
+            <div class="form-group">
+                <input type="password" id="confirmPassword" placeholder="Confirmar Senha">
+                <span class="toggle-password" data-target="confirmPassword">👁️</span>
+            </div>
+            <button id="saveUserBtn" class="btn-success">Cadastrar</button>
+            <div id="registerMessage" class="message" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- Modal de Gerenciamento de Usuários -->
+    <div id="usersModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Gerenciar Usuários</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div style="max-height:300px;overflow-y:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th style="text-align:right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersList">
+                        <!-- Lista de usuários será preenchida via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="usersMessage" class="message" style="display:none;margin-top:10px;"></div>
+        </div>
+    </div>
+
+    <script>
+        let users = JSON.parse(localStorage.getItem('users')) || [
+            { username: 'admin', password: '1234' },
+            { username: 'user1', password: 'senha1' },
+            { username: 'user2', password: 'senha2' },
+            { username: 'user3', password: 'senha3' },
+            { username: 'user4', password: 'senha4' },
+            { username: 'user5', password: 'senha5' },
+            { username: 'user6', password: 'senha6' },
+            { username: 'user7', password: 'senha7' },
+            { username: 'user8', password: 'senha8' },
+            { username: 'user9', password: 'senha9' }
+        ];
+
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos do DOM
+            const loginContainer = document.getElementById('login-container');
+            const appContainer = document.getElementById('app-container');
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const saveUserNotesBtn = document.getElementById('saveUserNotesBtn');
+            const clearUserNotesBtn = document.getElementById('clearUserNotesBtn');
+            const userNotes = document.getElementById('user-notes');
+            const loggedUser = document.getElementById('loggedUser');
+            const noteHistory = document.getElementById('noteHistory');
+            const adminHistory = document.getElementById('adminHistory');
+            const audioPlayer = document.getElementById('audio-player');
+            const registerBtn = document.getElementById('registerBtn');
+            const registerModal = document.getElementById('registerModal');
+            const closeModalBtn = document.querySelector('.close-modal');
+            const saveUserBtn = document.getElementById('saveUserBtn');
+            const newUsername = document.getElementById('newUsername');
+            const newPassword = document.getElementById('newPassword');
+            const confirmPassword = document.getElementById('confirmPassword');
+            const registerMessage = document.getElementById('registerMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            const downloadHistoryBtn = document.getElementById('downloadHistoryBtn');
+            const manageUsersBtn = document.getElementById('manageUsersBtn');
+            const usersModal = document.getElementById('usersModal');
+            const usersList = document.getElementById('usersList');
+            const usersMessage = document.getElementById('usersMessage');
+
+            // Funções auxiliares
+            function showMessage(element, message, isError = true) {
+                element.textContent = message;
+                element.className = isError ? 'message error-message' : 'message success-message';
+                element.style.display = 'block';
+                
+                if (!isError) {
+                    setTimeout(() => {
+                        element.style.display = 'none';
+                    }, 3000);
+                }
+            }
+
+            function hideMessage(element) {
+                element.style.display = 'none';
+            }
+
+            // Função para alternar a visibilidade da senha
+            document.querySelectorAll('.toggle-password').forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const passwordInput = document.getElementById(targetId);
+                    
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        this.textContent = '🙈';
+                    } else {
+                        passwordInput.type = 'password';
+                        this.textContent = '👁️';
+                    }
+                });
+            });
+
+            // Event Listeners
+            loginBtn.addEventListener('click', function() {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                hideMessage(errorMessage);
+
+                if (!username || !password) {
+                    showMessage(errorMessage, 'Preencha todos os campos!');
+                    return;
+                }
+
+                const user = users.find(u => u.username === username && u.password === password);
+                if (user) {
+                    currentUser = user;
+                    loginContainer.style.display = 'none';
+                    appContainer.style.display = 'block';
+                    loggedUser.textContent = `Usuário: ${currentUser.username}`;
+                    loadUserNotes();
+                    loadNoteHistory();
+                    
+                    // Mostrar elementos apenas para admin
+                    if (currentUser.username === 'admin') {
+                        adminHistory.style.display = 'block';
+                        document.querySelectorAll('.admin-only').forEach(el => {
+                            el.style.display = 'block';
+                        });
+                    } else {
+                        adminHistory.style.display = 'none';
+                        document.querySelectorAll('.admin-only').forEach(el => {
+                            el.style.display = 'none';
+                        });
+                    }
+
+                    audioPlayer.play();
+                } else {
+                    showMessage(errorMessage, 'Credenciais inválidas!');
+                }
+            });
+
+            logoutBtn.addEventListener('click', function() {
+                appContainer.style.display = 'none';
+                loginContainer.style.display = 'block';
+                document.getElementById('password').value = '';
+                currentUser = null;
+                
+                // Esconder todos os elementos admin ao fazer logout
+                document.querySelectorAll('.admin-only').forEach(el => {
+                    el.style.display = 'none';
+                });
+                
+                audioPlayer.pause();
+            });
+
+            saveUserNotesBtn.addEventListener('click', function() {
+                if (currentUser) {
+                    const content = userNotes.value;
+                    const timestamp = new Date().toLocaleString();
+                    const entry = `Usuário: ${currentUser.username}\nData/Hora: ${timestamp}\nConteúdo:\n${content}\n\n`;
+                    let history = localStorage.getItem('noteHistory') || '';
+                    history = entry + history;
+                    localStorage.setItem('noteHistory', history);
+                    localStorage.setItem(`notes_${currentUser.username}`, content);
+                    loadNoteHistory();
+                    alert('Notas salvas com sucesso!');
+                }
+            });
+
+            clearUserNotesBtn.addEventListener('click', function() {
+                if (confirm('Deseja limpar suas notas? Esta ação não pode ser desfeita.')) {
+                    userNotes.value = '';
+                    if (currentUser) {
+                        localStorage.removeItem(`notes_${currentUser.username}`);
+                    }
+                }
+            });
+
+            function loadUserNotes() {
+                if (currentUser) {
+                    const notes = localStorage.getItem(`notes_${currentUser.username}`);
+                    if (notes) {
+                        userNotes.value = notes;
+                    } else {
+                        userNotes.value = '';
+                    }
+                }
+            }
+
+            function loadNoteHistory() {
+                noteHistory.textContent = localStorage.getItem('noteHistory') || 'Nenhum registro ainda.';
+            }
+
+            // Cadastro de novo usuário - Modal
+            registerBtn.addEventListener('click', function() {
+                newUsername.value = '';
+                newPassword.value = '';
+                confirmPassword.value = '';
+                hideMessage(registerMessage);
+                registerModal.style.display = 'flex';
+            });
+
+            closeModalBtn.addEventListener('click', function() {
+                registerModal.style.display = 'none';
+            });
+
+            // Fechar modal ao clicar fora do conteúdo
+            registerModal.addEventListener('click', function(e) {
+                if (e.target === registerModal) {
+                    registerModal.style.display = 'none';
+                }
+            });
+
+            saveUserBtn.addEventListener('click', function() {
+                const username = newUsername.value;
+                const password = newPassword.value;
+                const confirmPass = confirmPassword.value;
+
+                hideMessage(registerMessage);
+
+                if (!username || !password || !confirmPass) {
+                    showMessage(registerMessage, 'Preencha todos os campos!');
+                    return;
+                }
+
+                if (password !== confirmPass) {
+                    showMessage(registerMessage, 'As senhas não coincidem!');
+                    return;
+                }
+
+                if (users.find(u => u.username === username)) {
+                    showMessage(registerMessage, 'Usuário já existe!');
+                    return;
+                }
+
+                users.push({ username, password });
+                localStorage.setItem('users', JSON.stringify(users));
+                showMessage(registerMessage, 'Usuário cadastrado com sucesso!', false);
+                
+                // Limpa os campos e fecha o modal após 2 segundos
+                setTimeout(() => {
+                    newUsername.value = '';
+                    newPassword.value = '';
+                    confirmPassword.value = '';
+                    registerModal.style.display = 'none';
+                }, 2000);
+            });
+
+            // Baixar histórico de notas
+            downloadHistoryBtn.addEventListener('click', function() {
+                const historyContent = localStorage.getItem('noteHistory') || 'Nenhum registro ainda.';
+                const blob = new Blob([historyContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'historico_notas.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            // Gerenciamento de usuários
+            manageUsersBtn.addEventListener('click', function() {
+                loadUsersList();
+                usersModal.style.display = 'flex';
+            });
+
+            // Fechar modal de usuários
+            usersModal.querySelector('.close-modal').addEventListener('click', function() {
+                usersModal.style.display = 'none';
+            });
+
+            // Fechar modal ao clicar fora
+            usersModal.addEventListener('click', function(e) {
+                if (e.target === usersModal) {
+                    usersModal.style.display = 'none';
+                }
+            });
+
+            // Carregar lista de usuários
+            function loadUsersList() {
+                usersList.innerHTML = '';
+                users.forEach(user => {
+                    const row = document.createElement('tr');
+                    
+                    const userCell = document.createElement('td');
+                    userCell.textContent = user.username;
+                    
+                    const actionsCell = document.createElement('td');
+                    actionsCell.style.textAlign = 'right';
+                    
+                    // Não permitir excluir o admin
+                    if (user.username !== 'admin') {
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Excluir';
+                        deleteBtn.className = 'btn-danger action-btn';
+                        deleteBtn.addEventListener('click', function() {
+                            deleteUser(user.username);
+                        });
+                        actionsCell.appendChild(deleteBtn);
+                    }
+                    
+                    row.appendChild(userCell);
+                    row.appendChild(actionsCell);
+                    usersList.appendChild(row);
+                });
+            }
+
+            // Função para excluir usuário
+            function deleteUser(username) {
+                if (confirm(`Tem certeza que deseja excluir o usuário "${username}"? Esta ação não pode ser desfeita.`)) {
+                    users = users.filter(user => user.username !== username);
+                    localStorage.setItem('users', JSON.stringify(users));
+                    
+                    // Remover também as notas do usuário excluído
+                    if (localStorage.getItem(`notes_${username}`)) {
+                        localStorage.removeItem(`notes_${username}`);
+                    }
+                    
+                    loadUsersList();
+                    showMessage(usersMessage, `Usuário "${username}" excluído com sucesso!`, false);
+                    
+                    // Se o usuário atual foi excluído, fazer logout
+                    if (currentUser && currentUser.username === username) {
+                        logoutBtn.click();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

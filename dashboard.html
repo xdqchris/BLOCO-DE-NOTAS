@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minhas Anotações</title>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>📅 Organizador Pessoal</h1>
+            <button id="logoutBtn">Sair</button>
+        </header>
+
+        <div class="main-content">
+            <!-- Calendário -->
+            <div id="calendar"></div>
+
+            <!-- Anotações -->
+            <div class="notes-section">
+                <h2>📝 Minhas Anotações</h2>
+                <textarea id="notesInput" placeholder="Digite suas anotações..."></textarea>
+                <button id="saveNotesBtn">Salvar</button>
+                <div id="savedNotes"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
